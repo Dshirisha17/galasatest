@@ -1,0 +1,22 @@
+name: Automated galasa Testing Workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Galasa_tests:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        
+      - name: Set up Git for Windows
+        shell: cmd
+        run: |
+          "C:\Program Files\Git\bin\bash.exe" --version
+      
+      - name: Start WebDriver
+        shell: cmd
+        run: |
+          "C:\Program Files\Git\bin\bash.exe" C:\Users\sandhata\Desktop\galasa1.sh
