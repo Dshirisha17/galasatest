@@ -16,7 +16,7 @@ jobs:
         run: |
           "C:\Program Files\Git\bin\bash.exe" --version
       
-      - name: Start WebDriver
+      - name: Executing the testcases using Galasa
         shell: cmd
         run: |
           "C:\Program Files\Git\bin\bash.exe" C:\Users\sandhata\Desktop\galasa1.sh
