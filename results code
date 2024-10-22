@@ -1,0 +1,135 @@
+const fs = require('fs');
+const path = require('path');
+
+// Define the path to the main directory
+const mainDirPath = path.join('C:', 'Users', 'sandhata', '.galasa', 'ras');
+
+// Function to get the latest folder in the directory
+function getLatestFolder(dirPath) {
+    const folders = fs.readdirSync(dirPath)
+        .map(folder => ({
+            name: folder,
+            path: path.join(dirPath, folder),
+            stats: fs.statSync(path.join(dirPath, folder))
+        }))
+        .filter(folder => fs.statSync(folder.path).isDirectory()) // Filter only directories
+        .sort((a, b) => b.stats.birthtime - a.stats.birthtime); // Sort by creation time (latest first)
+
+    return folders.length > 0 ? folders[0].path : null; // Return the latest folder path
+}
+
+// Get the latest folder
+const latestFolderPath = getLatestFolder(mainDirPath);
+
+if (!latestFolderPath) {
+    console.error('No folder found in the specified directory.');
+    process.exit(1); // Exit if no folder is found
+}
+
+// Define the path to the JSON file in the latest folder
+const jsonFilePath = path.join(latestFolderPath, 'structure.json');
+
+// Read the JSON data from the provided path
+const jsonData = JSON.parse(fs.readFileSync(jsonFilePath, 'utf-8'));
+
+// Create an HTML file with vibrant styles
+let htmlContent = `
+<html>
+  <head>
+    <title>Test Results</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f8ff; /* Light blue background */
+      }
+      h1 {
+        text-align: center;
+        color: #2c3e50;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      table, th, td {
+        border: 1px solid #ddd;
+      }
+      th, td {
+        padding: 12px;
+        text-align: left;
+      }
+      th {
+        background-color: #4CAF50; /* Header background color */
+        color: white; /* Header text color */
+      }
+      tr:nth-child(even) {
+        background-color: #f2f2f2; /* Alternating row color */
+      }
+      tr:nth-child(odd) {
+        background-color: #e6f7ff; /* Light blue for odd rows */
+      }
+      .passed {
+        color: #28a745; /* Green for passed */
+        font-weight: bold;
+      }
+      .failed {
+        color: #e74c3c; /* Red for failed */
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test Results for ${jsonData.runName}</h1>
+    <table>
+      <tr>
+        <th>Method Name</th>
+        <th>Result</th>
+        <th>Duration (ms)</th>
+        <th>Failure Reason</th> <!-- New column for failure reason -->
+      </tr>
+`;
+
+// Loop through each test method and append rows to the HTML table
+jsonData.methods.forEach(method => {
+    // Calculate duration from startTime to endTime
+    const startTime = new Date(method.startTime);
+    const endTime = new Date(method.endTime);
+    const duration = endTime - startTime;
+
+    // Add a class for color based on the result (Passed or Failed)
+    const resultClass = method.result === 'Passed' ? 'passed' : 'failed';
+    
+    // Determine failure reason if applicable
+    let failureReason = '';
+    if (method.result === 'Failed' && method.exception) {
+        const regex = /Expecting.*?but was:<(.*?)>/s;
+        const match = method.exception.match(regex);
+        if (match) {
+            failureReason = match[1].replace(/(\r\n|\n|\r)/gm, ' ').trim(); // Clean up the message
+        } else {
+            failureReason = 'An error occurred';
+        }
+    }
+
+    htmlContent += `
+      <tr>
+        <td>${method.methodName}</td>
+        <td class="${resultClass}">${method.result}</td>
+        <td>${duration}</td>
+        <td>${failureReason}</td> <!-- Include the failure reason -->
+      </tr>
+    `;
+});
+
+// Close the HTML tags
+htmlContent += `
+    </table>
+  </body>
+</html>
+`;
+
+// Write the HTML content to a file in the current directory
+fs.writeFileSync('testResults.html', htmlContent);
+
+console.log('test results created successfully!');
