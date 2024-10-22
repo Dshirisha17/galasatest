@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Navigate to the project directory where the Maven project is located.
+cd "C:/Users/sandhata/shirisha_dodla/Galasa_Projects/dev.galasa.selenium.uitesting" || {
+    echo "Error: Failed to change directory to project location."
+    exit 1
+}
+
+# Run Maven clean install to build the project.
+echo "Running 'mvn clean install' to build the project..."
+mvn clean install
+if [ $? -ne 0 ]; then
+    echo "Error: Maven build failed. Please check the output for details."
+    exit 1
+else
+    echo "Maven build completed successfully."
+fi
+
+# Submit the Galasa command to run the tests.
+echo "Submitting Galasa command to run tests..."
+galasactl runs submit local --log - \
+--obr mvn:dev.galasa.selenium.uitesting/dev.galasa.selenium.uitesting.obr/0.0.1-SNAPSHOT/obr \
+--class dev.galasa.selenium.uitesting.login/dev.galasa.selenium.uitesting.login.TestLogin
+if [ $? -ne 0 ]; then
+    echo "Warning: Galasa command failed. Continuing with the next steps..."
+else
+    echo "Galasa command submitted successfully."
+fi
+
+
+# Navigate to the directory containing the JSON to HTML conversion script.
+cd "C:/Users/sandhata/Desktop/jsontohmtl" || {
+    echo "Error: Failed to change directory to JSON to HTML location."
+    exit 1
+}
+
+# Run the Node.js script to convert JSON to HTML.
+echo "Running 'node test.js' to convert JSON to HTML..."
+node test.js
+if [ $? -ne 0 ]; then
+    echo "Error: Node script execution failed. Please check the output for details."
+    exit 1
+else
+    echo "Node script executed successfully."
+fi
+
+# Final statement indicating successful execution of the entire script.
+echo "Script completed successfully!"
