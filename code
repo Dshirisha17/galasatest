@@ -227,3 +227,11 @@ public class TestLogin {
         }
     }
 }
+
+# Selenium WebDriver configuration
+
+# Specify the WebDriver to be used for the primary instance (e.g., CHROME, FIREFOX)
+selenium.default.driver=CHROME
+
+# Path to the WebDriver executable
+selenium.local.driver.CHROME.path=C:/Program Files/chromedriver-win64/chromedriver.exe
